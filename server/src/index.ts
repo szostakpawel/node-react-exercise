@@ -13,9 +13,9 @@ if (!fs.existsSync(uploadDir)) {
 }
 
 const ENDPOINTS = {
-  deleteFile: "/delete-file",
-  saveFile: "/save-file",
-  getFiles: "/files",
+  deleteEmployee: "/delete-employee",
+  addEmployee: "/add-employee",
+  getEmployees: "/employees",
 };
 
 const validateEmployeeObject = (obj: EmployeeI): boolean => {
@@ -31,7 +31,7 @@ const getAllFiles = (): Array<EmployeeI> => {
   return data;
 };
 
-const deleteFile = (fileName: string): boolean => {
+const deleteEmployee = (fileName: string): boolean => {
   let deleted = false;
   try {
     fs.unlinkSync(`${uploadDir}${fileName}`);
@@ -42,7 +42,7 @@ const deleteFile = (fileName: string): boolean => {
   return deleted;
 };
 
-const saveFile = (fileName: string, content: string): boolean => {
+const addEmployee = (fileName: string, content: string): boolean => {
   let saved = false;
   try {
     fs.writeFileSync(`${uploadDir}${fileName}`, content);
@@ -58,7 +58,8 @@ const requestListenner = (
   res: http.ServerResponse
 ) => {
   const { url: endpoint, method } = req;
-  if (method === "POST" && endpoint?.startsWith(ENDPOINTS.saveFile)) {
+  console.log(endpoint);
+  if (method === "POST" && endpoint === ENDPOINTS.addEmployee) {
     const body: Array<Uint8Array> = [];
     req
       .on("error", (error: Error) => console.error(error.message))
@@ -69,7 +70,7 @@ const requestListenner = (
         if (isDataValid) {
           if (!parsedData?.id) parsedData.id = uuid.v1();
           const json = JSON.stringify(parsedData);
-          const savedSuccessfully = saveFile(`${parsedData.id}.json`, json);
+          const savedSuccessfully = addEmployee(`${parsedData.id}.json`, json);
           res.end(savedSuccessfully ? json : "Sorry, could not save data.");
         } else {
           res.end("Something is missing in sent data.");
@@ -77,16 +78,16 @@ const requestListenner = (
       });
   } else if (
     method === "DELETE" &&
-    endpoint?.startsWith(ENDPOINTS.deleteFile)
+    endpoint?.startsWith(ENDPOINTS.deleteEmployee)
   ) {
     const query = url.parse(endpoint, true).query;
     if (query?.id) {
-      const deletedSuccessfully = deleteFile(`${query.id}.json`);
+      const deletedSuccessfully = deleteEmployee(`${query.id}.json`);
       res.end(deletedSuccessfully ? query.id : "Sorry, could not delete data.");
     } else {
       res.end("ID of employee is required to delete its data.");
     }
-  } else if (method === "GET" && endpoint?.startsWith(ENDPOINTS.getFiles)) {
+  } else if (method === "GET" && ENDPOINTS.getEmployees === endpoint) {
     const files = getAllFiles();
     res.end(JSON.stringify(files));
   }
