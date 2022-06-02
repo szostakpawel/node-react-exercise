@@ -13,9 +13,9 @@ if (!fs.existsSync(uploadDir)) {
 }
 
 const ENDPOINTS = {
-  deleteEmployee: "/delete-employee",
-  addEmployee: "/add-employee",
-  getEmployees: "/employees",
+  deleteEmployee: "/api/delete-employee",
+  addEmployee: "/api/add-employee",
+  getEmployees: "/api/employees",
 };
 
 const validateEmployeeObject = (obj: EmployeeI): boolean => {
@@ -58,7 +58,6 @@ const requestListenner = (
   res: http.ServerResponse
 ) => {
   const { url: endpoint, method } = req;
-  console.log(endpoint);
   if (method === "POST" && endpoint === ENDPOINTS.addEmployee) {
     const body: Array<Uint8Array> = [];
     req
