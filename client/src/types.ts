@@ -15,6 +15,7 @@ export interface InputPropsI {
 
 export interface EmployeeI {
   age: number;
+  id?: string;
   name: string;
   lastName: string;
   occupation: string;

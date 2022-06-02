@@ -1,6 +1,6 @@
 import { Routes, Route, Link } from "react-router-dom";
-import Employees from "./pages/Employees";
-import Homepage from "./pages/Homepage";
+import Employees from "./components/Employees";
+import Form from "./components/Form";
 import React from "react";
 
 export default function App() {
@@ -17,10 +17,10 @@ export default function App() {
           </Link>
         </nav>
       </header>
-      <main className="mt-6">
+      <main className="mt-20 w-6/12 mx-auto">
         <Routes>
-          <Route path="/" element={<Homepage />} />
-          <Route path="employees" element={<Employees />} />
+          <Route path="/" element={<Form />} />
+          <Route path="/employees" element={<Employees />} />
         </Routes>
       </main>
     </div>
