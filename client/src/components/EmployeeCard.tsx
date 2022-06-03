@@ -1,14 +1,17 @@
 import React from "react";
 import { IEmployee } from "../types";
 
+//  rename
 interface Props {
   employee: IEmployee;
+  // string | null
   deleteEmployee: (id: string) => Promise<void>;
 }
 
 export default function EmployeeCard({ employee, deleteEmployee }: Props) {
   return (
     <div className="border-2 border-slate-300 rounded-md p-4">
+      {/* one component */}
       <span className="block text-lg">
         <span className="font-medium">Name: </span>
         {employee.name}

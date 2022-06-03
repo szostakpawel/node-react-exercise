@@ -1,6 +1,7 @@
-import React, { ChangeEvent, FormEvent, useState } from "react";
+import React, { FormEvent, useState } from "react";
+import { InputChangeEvent } from "../types";
 import { addEmployee } from "../services";
-import { SetterT, IInputProps } from "../types";
+import Input from "./Input";
 
 export default function Form() {
   const [age, setAge] = useState(16);
@@ -8,17 +9,13 @@ export default function Form() {
   const [lastName, setLastName] = useState("");
   const [occupation, setOccupation] = useState("");
 
-  const handleTextInputChange = (
-    setter: SetterT,
-    { target }: ChangeEvent<HTMLInputElement>
-  ) => {
-    // !FIXME
-    // Don't know why setter below makes React.SetStateAction<string> & React.SetStateAction<number>
-    // when setter parameter is typed as React.SetStateAction<string> | React.SetStateAction<number>
-    // Typescript complains but everything works correctly
-    // @ts-ignore
-    setter(target.value);
-  };
+  const handleSetName = ({ target }: InputChangeEvent) => setName(target.value);
+  const handleSetLastName = ({ target }: InputChangeEvent) =>
+    setLastName(target.value);
+  const handleSetOccupation = ({ target }: InputChangeEvent) =>
+    setOccupation(target.value);
+  const handleSetAge = ({ target }: InputChangeEvent) =>
+    setAge(Number(target.value) || 0);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -43,35 +40,20 @@ export default function Form() {
         className="grid gap-3 grid-cols-2 grid-rows-3 max-w-2xl"
         onSubmit={handleSubmit}
       >
-        <Input
-          label="Name"
-          type="text"
-          value={name}
-          onChange={handleTextInputChange}
-          setter={setName}
-        />
+        <Input label="Name" type="text" value={name} onChange={handleSetName} />
         <Input
           type="text"
           label="Last name"
           value={lastName}
-          onChange={handleTextInputChange}
-          setter={setLastName}
+          onChange={handleSetLastName}
         />
-
         <Input
           label="Occupation"
           type="text"
           value={occupation}
-          onChange={handleTextInputChange}
-          setter={setOccupation}
+          onChange={handleSetOccupation}
         />
-        <Input
-          label="Age"
-          type="number"
-          value={age}
-          onChange={handleTextInputChange}
-          setter={setAge}
-        />
+        <Input label="Age" type="number" value={age} onChange={handleSetAge} />
         <button
           className="py-2 px-6 text-lg w-fit h-fit bg-slate-300 rounded-2xl"
           type="submit"
@@ -79,21 +61,6 @@ export default function Form() {
           Submit
         </button>
       </form>
-    </div>
-  );
-}
-
-function Input({ type, label, value, onChange, setter }: IInputProps) {
-  return (
-    <div className="flex flex-col">
-      <label htmlFor={label}>{label}*</label>
-      <input
-        id={label}
-        type={type}
-        value={value}
-        className="border-2 border-slate-300 rounded py-2 px-3"
-        onChange={event => onChange(setter, event)}
-      />
     </div>
   );
 }

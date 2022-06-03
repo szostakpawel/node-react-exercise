@@ -9,12 +9,16 @@ export default function Employees() {
   const [loading, setLoading] = useState(false);
 
   const fetchEmployees = async () => {
-    const data = await getEmployees();
-    setEmployees(data);
+    try {
+      const data = await getEmployees();
+      setEmployees(data);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   useEffect(() => {
-    fetchEmployees().catch(error => console.error(error));
+    fetchEmployees();
   }, []);
 
   const handleDeleteEmployee = async (id: string): Promise<void> => {

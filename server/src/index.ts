@@ -62,8 +62,8 @@ const requestListenner = async (
   res: http.ServerResponse
 ) => {
   const { url: endpoint, method } = req;
-
-  switch (endpoint) {
+  const withoutParams = endpoint?.split("?")?.[0];
+  switch (withoutParams) {
     case ENDPOINTS.employees:
       try {
         const files = await parseAllFiles();
@@ -107,22 +107,24 @@ const requestListenner = async (
             }
           });
       } else if (method === "DELETE") {
-        const query = url.parse(endpoint, true).query;
-        if (query?.id && !Array.isArray(query.id)) {
-          try {
-            const response = await deleteEmployee(query.id);
-            res.end(response);
-          } catch (error) {
-            res.writeHead(500);
-            res.end("An error occured when adding the employee.");
+        if (endpoint) {
+          const query = url.parse(endpoint, true).query;
+          if (query?.id && !Array.isArray(query.id)) {
+            try {
+              const response = await deleteEmployee(query.id);
+              res.end(response);
+            } catch (error) {
+              res.writeHead(500);
+              res.end("An error occured when adding the employee.");
+            }
+          } else {
+            res.writeHead(400);
+            res.end("The query must contain exactly one id.");
           }
         } else {
-          res.writeHead(400);
-          res.end("The query must contain exactly one id.");
+          res.writeHead(405);
+          res.end("Method is not allowed.");
         }
-      } else {
-        res.writeHead(405);
-        res.end("Method is not allowed.");
       }
       break;
   }
