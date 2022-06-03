@@ -1,8 +1,8 @@
-import { EmployeeI } from "./types";
+import { IEmployee } from "./types";
 
 const url = "http://localhost:3000/api";
 
-export const addEmployee = async (employee: EmployeeI): Promise<boolean> => {
+export const addEmployee = async (employee: IEmployee): Promise<boolean> => {
   let added = false;
   try {
     const { statusText } = await fetch(`${url}/add-employee`, {
@@ -16,7 +16,7 @@ export const addEmployee = async (employee: EmployeeI): Promise<boolean> => {
   return added;
 };
 
-export const getEmployees = async (): Promise<Array<EmployeeI>> => {
+export const getEmployees = async (): Promise<Array<IEmployee>> => {
   return await (await fetch(`${url}/employees`)).json();
 };
 

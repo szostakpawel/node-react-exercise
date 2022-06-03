@@ -1,8 +1,8 @@
 import React from "react";
-import { EmployeeI } from "../types";
+import { IEmployee } from "../types";
 
 interface Props {
-  employee: EmployeeI;
+  employee: IEmployee;
   deleteEmployee: (id: string) => Promise<void>;
 }
 

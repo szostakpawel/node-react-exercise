@@ -2,7 +2,8 @@ import * as fs from "fs";
 import * as url from "url";
 import * as http from "http";
 import * as uuid from "uuid";
-import { EmployeeI } from "./types";
+import { IEmployee } from "./types";
+import { readdir, readFile, unlink, writeFile } from "node:fs/promises";
 
 const uploadDir = `${__dirname}/../upload/`;
 const HOST = "localhost";
@@ -13,82 +14,117 @@ if (!fs.existsSync(uploadDir)) {
 }
 
 const ENDPOINTS = {
-  deleteEmployee: "/api/delete-employee",
-  addEmployee: "/api/add-employee",
-  getEmployees: "/api/employees",
+  employee: "/api/employee",
+  employees: "/api/employees",
 };
 
-const validateEmployeeObject = (obj: EmployeeI): boolean => {
+const validateEmployeeObject = (obj: IEmployee): boolean => {
   return !!obj?.name && !!obj?.lastName && !!obj?.occupation && !!obj?.age;
 };
 
-const getAllFiles = (): Array<EmployeeI> => {
-  const data: Array<EmployeeI> = [];
-  fs.readdirSync(uploadDir).forEach(file => {
-    const content = fs.readFileSync(`${uploadDir}${file}`);
-    data.push(JSON.parse(content.toString()) as EmployeeI);
-  });
+const parseAllFiles = async (): Promise<Array<IEmployee>> => {
+  const data: Array<IEmployee> = [];
+  const files = await readdir(uploadDir);
+  for (const file of files) {
+    const buffer = await readFile(`${uploadDir}/${file}`);
+    const content = JSON.parse(buffer.toString());
+    data.push(content);
+  }
   return data;
 };
 
-const deleteEmployee = (fileName: string): boolean => {
-  let deleted = false;
+const deleteEmployee = async (id: string): Promise<string | null> => {
   try {
-    fs.unlinkSync(`${uploadDir}${fileName}`);
-    deleted = true;
+    await unlink(`${uploadDir}${id}.json`);
+    return id;
   } catch (error: unknown) {
     console.error(error);
+    return null;
   }
-  return deleted;
 };
 
-const addEmployee = (fileName: string, content: string): boolean => {
-  let saved = false;
+const addEmployee = async (
+  content: Required<IEmployee>
+): Promise<string | null> => {
+  const { id } = content;
+  const stringify = JSON.stringify(content);
   try {
-    fs.writeFileSync(`${uploadDir}${fileName}`, content);
-    saved = true;
+    await writeFile(`${uploadDir}${id}.json`, stringify);
+    return id;
   } catch (error: unknown) {
     console.error(error);
+    return null;
   }
-  return saved;
 };
 
-const requestListenner = (
+const requestListenner = async (
   req: http.IncomingMessage,
   res: http.ServerResponse
 ) => {
   const { url: endpoint, method } = req;
-  if (method === "POST" && endpoint === ENDPOINTS.addEmployee) {
-    const body: Array<Uint8Array> = [];
-    req
-      .on("error", (error: Error) => console.error(error.message))
-      .on("data", (chunk: Uint8Array) => body.push(chunk))
-      .on("end", () => {
-        let parsedData: EmployeeI = JSON.parse(Buffer.concat(body).toString());
-        const isDataValid = validateEmployeeObject(parsedData);
-        if (isDataValid) {
-          if (!parsedData?.id) parsedData.id = uuid.v1();
-          const json = JSON.stringify(parsedData);
-          const savedSuccessfully = addEmployee(`${parsedData.id}.json`, json);
-          res.end(savedSuccessfully ? json : "Sorry, could not save data.");
+
+  switch (endpoint) {
+    case ENDPOINTS.employees:
+      try {
+        const files = await parseAllFiles();
+        const stringify = JSON.stringify(files);
+        res.end(stringify);
+      } catch (error) {
+        res.writeHead(500);
+        res.end("An error occured when parsing files.");
+      }
+      break;
+    case ENDPOINTS.employee:
+      if (method === "POST") {
+        const body: Array<Uint8Array> = [];
+        req
+          .on("error", (error: Error) => {
+            console.error(error.message);
+          })
+          .on("data", (chunk: Uint8Array) => {
+            body.push(chunk);
+          })
+          .on("end", async () => {
+            const concatBody = Buffer.concat(body).toString();
+            let parsedData: IEmployee = JSON.parse(concatBody);
+            const isDataValid = validateEmployeeObject(parsedData);
+            if (isDataValid) {
+              if (!parsedData?.id) {
+                parsedData.id = uuid.v1();
+              }
+              try {
+                const response = await addEmployee(
+                  parsedData as Required<IEmployee>
+                );
+                res.end(response);
+              } catch (error) {
+                res.writeHead(500);
+                res.end("Sorry, could not save employee.");
+              }
+            } else {
+              res.writeHead(400);
+              res.end("Something is missing in sent data.");
+            }
+          });
+      } else if (method === "DELETE") {
+        const query = url.parse(endpoint, true).query;
+        if (query?.id && !Array.isArray(query.id)) {
+          try {
+            const response = await deleteEmployee(query.id);
+            res.end(response);
+          } catch (error) {
+            res.writeHead(500);
+            res.end("An error occured when adding the employee.");
+          }
         } else {
-          res.end("Something is missing in sent data.");
+          res.writeHead(400);
+          res.end("The query must contain exactly one id.");
         }
-      });
-  } else if (
-    method === "DELETE" &&
-    endpoint?.startsWith(ENDPOINTS.deleteEmployee)
-  ) {
-    const query = url.parse(endpoint, true).query;
-    if (query?.id) {
-      const deletedSuccessfully = deleteEmployee(`${query.id}.json`);
-      res.end(deletedSuccessfully ? query.id : "Sorry, could not delete data.");
-    } else {
-      res.end("ID of employee is required to delete its data.");
-    }
-  } else if (method === "GET" && ENDPOINTS.getEmployees === endpoint) {
-    const files = getAllFiles();
-    res.end(JSON.stringify(files));
+      } else {
+        res.writeHead(405);
+        res.end("Method is not allowed.");
+      }
+      break;
   }
 };
 

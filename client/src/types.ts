@@ -5,7 +5,7 @@ export type StringSetterT = (value: SetStateAction<string>) => void;
 
 export type SetterT = StringSetterT | NumberSetterT;
 
-export interface InputPropsI {
+export interface IInputProps {
   type: string;
   label: string;
   setter: SetterT;
@@ -13,7 +13,7 @@ export interface InputPropsI {
   onChange: (setter: SetterT, event: ChangeEvent<HTMLInputElement>) => void;
 }
 
-export interface EmployeeI {
+export interface IEmployee {
   age: number;
   id?: string;
   name: string;

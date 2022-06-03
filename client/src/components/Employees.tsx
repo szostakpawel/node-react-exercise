@@ -1,11 +1,11 @@
 import EmployeeCard from "../components/EmployeeCard";
 import React, { useEffect, useState } from "react";
 import { deleteEmployee, getEmployees } from "../services";
-import { EmployeeI } from "../types";
+import { IEmployee } from "../types";
 import Loader from "./Loader";
 
 export default function Employees() {
-  const [employees, setEmployees] = useState<Array<EmployeeI>>([]);
+  const [employees, setEmployees] = useState<Array<IEmployee>>([]);
   const [loading, setLoading] = useState(false);
 
   const fetchEmployees = async () => {

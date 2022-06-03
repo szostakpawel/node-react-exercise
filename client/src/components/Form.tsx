@@ -1,6 +1,6 @@
 import React, { ChangeEvent, FormEvent, useState } from "react";
 import { addEmployee } from "../services";
-import { SetterT, InputPropsI } from "../types";
+import { SetterT, IInputProps } from "../types";
 
 export default function Form() {
   const [age, setAge] = useState(16);
@@ -83,11 +83,12 @@ export default function Form() {
   );
 }
 
-function Input({ type, label, value, onChange, setter }: InputPropsI) {
+function Input({ type, label, value, onChange, setter }: IInputProps) {
   return (
     <div className="flex flex-col">
-      <label>{label}*</label>
+      <label htmlFor={label}>{label}*</label>
       <input
+        id={label}
         type={type}
         value={value}
         className="border-2 border-slate-300 rounded py-2 px-3"
