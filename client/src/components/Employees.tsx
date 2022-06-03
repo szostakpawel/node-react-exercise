@@ -14,7 +14,7 @@ export default function Employees() {
   };
 
   useEffect(() => {
-    fetchEmployees().catch(error => console.error(error));
+    fetchEmployees().catch(error => console.error(error)); // use try catch
   }, []);
 
   const handleDeleteEmployee = async (id: string): Promise<void> => {
