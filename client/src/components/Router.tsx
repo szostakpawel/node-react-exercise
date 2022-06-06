@@ -1,13 +1,13 @@
-import { Routes, Route } from "react-router-dom";
-import Employees from "./Employees";
-import Form from "./Form";
 import React from "react";
+import FormContainer from "./FormContainer";
+import { Routes, Route } from "react-router-dom";
+import EmployeesContainer from "./EmployeesContainer";
 
 const Router = () => {
   return (
     <Routes>
-      <Route path="/" element={<Form />} />
-      <Route path="/employees" element={<Employees />} />
+      <Route path="/" element={<FormContainer />} />
+      <Route path="/employees" element={<EmployeesContainer />} />
     </Routes>
   );
 };

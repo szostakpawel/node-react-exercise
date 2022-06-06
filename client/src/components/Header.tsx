@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
-const Header = () => {
+export default function Header() {
   return (
     <header className="flex justify-between items-center mt-3">
       <span className="text-3xl">Employees Management</span>
@@ -15,6 +15,4 @@ const Header = () => {
       </nav>
     </header>
   );
-};
-
-export default Header;
+}
