@@ -1,27 +1,17 @@
 import React from "react";
-import { EmployeeI } from "../types";
+import CardTextField from "./CardTextField";
+import { IEmployeeCardProps } from "../types";
 
-interface Props {
-  employee: EmployeeI;
-  deleteEmployee: (id: string) => Promise<void>;
-}
-
-export default function EmployeeCard({ employee, deleteEmployee }: Props) {
+export default function EmployeeCard({
+  employee,
+  deleteEmployee,
+}: IEmployeeCardProps) {
   return (
     <div className="border-2 border-slate-300 rounded-md p-4">
-      <span className="block text-lg">
-        <span className="font-medium">Name: </span>
-        {employee.name}
-      </span>
-      <span className="block text-lg">
-        <span className="font-medium">Last name: </span>
-        {employee.lastName}
-      </span>
-      <span className="block text-lg">
-        <span className="font-medium">Occupation: </span>
-        {employee.occupation}
-      </span>
-      {/* <span>{employee.id}</span> */}
+      <CardTextField title="Name" value={employee.name} />
+      <CardTextField title="Last name" value={employee.lastName} />
+      <CardTextField title="Occupation" value={employee.occupation} />
+      <CardTextField title="Age" value={employee.age} />
       <button
         className="py-1 px-2 rounded-lg mt-2 bg-red-200"
         onClick={() => deleteEmployee(employee?.id || "")}

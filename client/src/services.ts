@@ -1,34 +1,39 @@
-import { EmployeeI } from "./types";
+import { IEmployee } from "./types";
 
+const OK_STATUS_CODE = 200;
 const url = "http://localhost:3000/api";
 
-export const addEmployee = async (employee: EmployeeI): Promise<boolean> => {
-  let added = false;
+export const addEmployee = async (employee: IEmployee): Promise<boolean> => {
   try {
-    const { statusText } = await fetch(`${url}/add-employee`, {
+    const { status } = await fetch(`${url}/employee`, {
       method: "POST",
       body: JSON.stringify(employee),
     });
-    if (statusText === "OK") added = true;
+    if (status === OK_STATUS_CODE) {
+      return true;
+    } else return false;
   } catch (error) {
     console.error(error);
+    return false;
   }
-  return added;
 };
 
-export const getEmployees = async (): Promise<Array<EmployeeI>> => {
-  return await (await fetch(`${url}/employees`)).json();
+export const getEmployees = async (): Promise<Array<IEmployee>> => {
+  const response = await fetch(`${url}/employees`);
+  const data = await response.json();
+  return data;
 };
 
 export const deleteEmployee = async (id: string): Promise<boolean> => {
-  let deleted = false;
   try {
-    const { statusText } = await fetch(`${url}/delete-employee?id=${id}`, {
+    const { status } = await fetch(`${url}/employee?id=${id}`, {
       method: "DELETE",
     });
-    if (statusText === "OK") deleted = true;
+    if (status === OK_STATUS_CODE) {
+      return true;
+    } else return false;
   } catch (error) {
     console.error(error);
+    return false;
   }
-  return deleted;
 };

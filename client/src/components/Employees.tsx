@@ -1,33 +1,13 @@
 import EmployeeCard from "../components/EmployeeCard";
-import React, { useEffect, useState } from "react";
-import { deleteEmployee, getEmployees } from "../services";
-import { EmployeeI } from "../types";
+import { IEmployeesProps } from "../types";
 import Loader from "./Loader";
+import React from "react";
 
-export default function Employees() {
-  const [employees, setEmployees] = useState<Array<EmployeeI>>([]);
-  const [loading, setLoading] = useState(false);
-
-  const fetchEmployees = async () => {
-    const data = await getEmployees();
-    setEmployees(data);
-  };
-
-  useEffect(() => {
-    fetchEmployees().catch(error => console.error(error));
-  }, []);
-
-  const handleDeleteEmployee = async (id: string): Promise<void> => {
-    setLoading(true);
-    const deleted = await deleteEmployee(id);
-    if (deleted) {
-      await fetchEmployees();
-    } else {
-      alert("Something went wrong :c");
-    }
-    setLoading(false);
-  };
-
+export default function Employees({
+  loading,
+  employees,
+  handleDeleteEmployee,
+}: IEmployeesProps) {
   return (
     <div>
       <span className="text-2xl">Registered employees</span>

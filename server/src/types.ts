@@ -1,4 +1,4 @@
-interface EmployeeI {
+interface IEmployee {
   id?: string;
   age?: number;
   name?: string;
@@ -6,4 +6,4 @@ interface EmployeeI {
   occupation?: string;
 }
 
-export { EmployeeI };
+export { IEmployee };
