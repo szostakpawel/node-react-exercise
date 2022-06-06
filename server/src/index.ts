@@ -5,6 +5,12 @@ import * as uuid from "uuid";
 import { IEmployee } from "./types";
 import { readdir, readFile, unlink, writeFile } from "node:fs/promises";
 
+const STATUSES = {
+  INTERNAL_SERVER_ERROR: 500,
+  METHOD_NOT_ALLOWED: 405,
+  BAD_REQUEST: 400,
+};
+
 const uploadDir = `${__dirname}/../upload/`;
 const HOST = "localhost";
 const PORT = 3500;
@@ -33,7 +39,7 @@ const parseAllFiles = async (): Promise<Array<IEmployee>> => {
   return data;
 };
 
-const deleteEmployee = async (id: string): Promise<string | null> => {
+const deleteFile = async (id: string): Promise<string | null> => {
   try {
     await unlink(`${uploadDir}${id}.json`);
     return id;
@@ -43,7 +49,7 @@ const deleteEmployee = async (id: string): Promise<string | null> => {
   }
 };
 
-const addEmployee = async (
+const createFile = async (
   content: Required<IEmployee>
 ): Promise<string | null> => {
   const { id } = content;
@@ -62,16 +68,18 @@ const requestListenner = async (
   res: http.ServerResponse
 ) => {
   const { url: endpoint, method } = req;
-  const withoutParams = endpoint?.split("?")?.[0];
-  switch (withoutParams) {
+  const urlWithoutParams = endpoint?.split("?")?.[0];
+  switch (urlWithoutParams) {
     case ENDPOINTS.employees:
-      try {
-        const files = await parseAllFiles();
-        const stringify = JSON.stringify(files);
-        res.end(stringify);
-      } catch (error) {
-        res.writeHead(500);
-        res.end("An error occured when parsing files.");
+      if (method === "GET") {
+        try {
+          const files = await parseAllFiles();
+          const stringify = JSON.stringify(files);
+          res.end(stringify);
+        } catch (error) {
+          res.writeHead(STATUSES.INTERNAL_SERVER_ERROR);
+          res.end("An error occured when parsing files.");
+        }
       }
       break;
     case ENDPOINTS.employee:
@@ -85,25 +93,25 @@ const requestListenner = async (
             body.push(chunk);
           })
           .on("end", async () => {
-            const concatBody = Buffer.concat(body).toString();
-            let parsedData: IEmployee = JSON.parse(concatBody);
-            const isDataValid = validateEmployeeObject(parsedData);
-            if (isDataValid) {
-              if (!parsedData?.id) {
-                parsedData.id = uuid.v1();
-              }
-              try {
-                const response = await addEmployee(
+            try {
+              const concatBody = Buffer.concat(body).toString();
+              let parsedData: IEmployee = JSON.parse(concatBody);
+              const isDataValid = validateEmployeeObject(parsedData);
+              if (isDataValid) {
+                if (!parsedData?.id) {
+                  parsedData.id = uuid.v1();
+                }
+                const response = await createFile(
                   parsedData as Required<IEmployee>
                 );
                 res.end(response);
-              } catch (error) {
-                res.writeHead(500);
-                res.end("Sorry, could not save employee.");
+              } else {
+                res.writeHead(STATUSES.BAD_REQUEST);
+                res.end("Something is missing in sent data.");
               }
-            } else {
-              res.writeHead(400);
-              res.end("Something is missing in sent data.");
+            } catch (error) {
+              res.writeHead(STATUSES.INTERNAL_SERVER_ERROR);
+              res.end("Sorry, could not save employee.");
             }
           });
       } else if (method === "DELETE") {
@@ -111,18 +119,18 @@ const requestListenner = async (
           const query = url.parse(endpoint, true).query;
           if (query?.id && !Array.isArray(query.id)) {
             try {
-              const response = await deleteEmployee(query.id);
+              const response = await deleteFile(query.id);
               res.end(response);
             } catch (error) {
-              res.writeHead(500);
+              res.writeHead(STATUSES.INTERNAL_SERVER_ERROR);
               res.end("An error occured when adding the employee.");
             }
           } else {
-            res.writeHead(400);
+            res.writeHead(STATUSES.BAD_REQUEST);
             res.end("The query must contain exactly one id.");
           }
         } else {
-          res.writeHead(405);
+          res.writeHead(STATUSES.METHOD_NOT_ALLOWED);
           res.end("Method is not allowed.");
         }
       }

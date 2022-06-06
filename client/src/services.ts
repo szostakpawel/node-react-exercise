@@ -1,5 +1,6 @@
 import { IEmployee } from "./types";
 
+const OK_STATUS_CODE = 200;
 const url = "http://localhost:3000/api";
 
 export const addEmployee = async (employee: IEmployee): Promise<boolean> => {
@@ -8,7 +9,7 @@ export const addEmployee = async (employee: IEmployee): Promise<boolean> => {
       method: "POST",
       body: JSON.stringify(employee),
     });
-    if (status === 200) {
+    if (status === OK_STATUS_CODE) {
       return true;
     } else return false;
   } catch (error) {
@@ -28,7 +29,7 @@ export const deleteEmployee = async (id: string): Promise<boolean> => {
     const { status } = await fetch(`${url}/employee?id=${id}`, {
       method: "DELETE",
     });
-    if (status === 200) {
+    if (status === OK_STATUS_CODE) {
       return true;
     } else return false;
   } catch (error) {
